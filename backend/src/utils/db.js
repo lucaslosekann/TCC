@@ -18,7 +18,7 @@ setupDatabase();
 //Exports the pool object to the node enviroment
 exports.pool = pool;
 
-
+//Setup the database creating all the necessary tabls
 async function setupDatabase (){
   try{
     await pool.promise().query(`
