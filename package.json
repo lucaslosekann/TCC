@@ -1,0 +1,14 @@
+{
+  "name": "tcc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private":true,
+  "workspaces":{
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "repository": "https://github.com/lucaslosekann/TCC.git",
+  "author": "lucaslosekann <50055600+lucaslosekann@users.noreply.github.com>",
+  "license": "MIT"
+}
