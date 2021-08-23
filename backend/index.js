@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const port = 8080;
 const cors = require('cors');
+require('dotenv').config()
 const { protectAdmin, protect } = require('./src/utils/auth');
 require('./src/utils/db.js');
 

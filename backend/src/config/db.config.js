@@ -2,7 +2,7 @@
 module.exports = {
   host     : 'localhost',
   user     : 'root',
-  password : '********',
+  password : process.env.DB_PASS,
   database : 'db_testes',
   multipleStatements: true
 }
