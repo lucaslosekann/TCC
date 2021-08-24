@@ -88,6 +88,17 @@ async function setupDatabase (){
       )`
     )
     await pool.promise().query(`
+    CREATE TABLE IF NOT EXISTS product_images(
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      aws_name VARCHAR(50) UNIQUE NOT NULL,
+      size INT UNSIGNED NOT NULL,
+      mimetype VARCHAR(50) NOT NULL,
+      project_id INT UNSIGNED NOT NULL,
+      isThumb BOOL NOT NULL,
+      FOREIGN KEY (project_id) REFERENCES products(id)
+      )`
+    )
+    await pool.promise().query(`
     CREATE TABLE IF NOT EXISTS payment_methods(
       id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       type VARCHAR(255) NOT NULL

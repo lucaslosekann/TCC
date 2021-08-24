@@ -72,7 +72,30 @@ exports.getMany = async (req,res) => {
 }
 
 exports.createOne = async (req,res) => {
-  
+  if(!req.body.name ||
+    !req.body.price || 
+    !req.body.gender ||
+    !req.body.lens ||
+    !req.body.color ||
+    !req.body.brand
+    )return res.status(400).send({
+      message: "All the fields are required",
+      code: 33,
+    });
+  const dimensions = req.body.dimensions || null;
+  const description = req.body.description || null;
+  const inventory = req.body.inventory || 0;
+  const added_by = req.user.id;
+  let productId;
+  try{
+    productId = await pool.promise().query(`INSERT INTO products (name, price, gender, lens, color, brand, dimensions, description, inventory, added_by)
+                                VALUES(?,?,?,?,?,?,?,?,?,?)`,
+    [req.body.name, req.body.price, req.body.gender, req.body.lens, req.body.color, req.body.brand, dimensions, description, inventory, added_by])
+  }catch(err){
+    console.error(err);
+    return res.status(500).send({message: "Internal server error", code: 51})
+  }
+  res.send({id: productId[0].insertId})
 }
 
 
