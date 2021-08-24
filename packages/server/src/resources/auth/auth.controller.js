@@ -2,7 +2,7 @@ const {
   newToken, encryptPassword, checkPassword
 } = require("../../utils/auth");
 const pool = require("../../utils/db").pool;
-
+const { signup } = require("./auth.validation")
 
 
 
@@ -79,55 +79,16 @@ exports.signin = async (req, res) => {
   Returning a JWT
 */
 exports.signup = async (req, res) => {
-  //Check if frontend sent all the necessary data
-  if (
-    !req.body.email ||
-    !req.body.password ||
-    !req.body.firstName ||
-    !req.body.lastName ||
-    !req.body.phoneNumber ||
-    !req.body.gender ||
-    !req.body.address
-  ) {
-    return res.status(400).send({
-      message: "All the fields are required",
-      code: 13,
-    });
-  }
-
-  //Check if frontend sent all the necessary data inside the address object
-  if (
-    !req.body.address.street ||
-    !req.body.address.postalCode ||
-    !req.body.address.uf ||
-    !req.body.address.city ||
-    !req.body.address.country
-  ) {
-    return res.status(400).send({
-      message: "All the address fields are required",
-      code: 14,
-    });
-  }
-
-  //Check if frontend sent a valid gender
-  if (
-    req.body.gender != "Masculino" &&
-    req.body.gender != "Feminino" &&
-    req.body.gender != "Outro"
-  ) {
-    return res.status(400).send({
-      message: `Gender must be ['Masculino', 'Feminino', 'Outro']`,
-      code: 15,
-    });
-  }
-
+  
+  let data;
   //Check if user exists with that email or phone number
   try {
+    //Check if frontend sent all the necessary data
+    data = await signup.validateAsync(req.body)
     let dbReponse = await pool
       .promise()
-      .query("SELECT * FROM users WHERE email = ?; SELECT * FROM users WHERE phone_number = ?", [req.body.email, req.body.phoneNumber]);
-      let [email, phone] = dbReponse[0];
-    
+      .query("SELECT * FROM users WHERE email = ?; SELECT * FROM users WHERE phone_number = ?", [data.email, data.phoneNumber]);
+    let [email, phone] = dbReponse[0];
     if (email.length > 0) {
       return res.status(400).send({
         message: `User already exists with that email`,
@@ -141,20 +102,17 @@ exports.signup = async (req, res) => {
       });
     }
   } catch (e) {
-    console.log(e);
-    return res.status(500).send({
-      message: "Internal server error",
-      code: 51,
-    });
+    if(e.isJoi) return res.status(400).send({message: e.details[0].message, code: 61})
+    return res.status(500).send({message: "Internal server error", code: 51})
   }
 
   //Creates a constant named number with the given number if it exists and if it doesn't assign null to it
-  const number = req.body.address.number || null;
+  const number = data.address.number || null;
 
-  const address = req.body.address;
+  const address = data.address;
   try {
     //Creates a hash of the password using bcrypt
-    const passwordHash = await encryptPassword(req.body.password);
+    const passwordHash = await encryptPassword(data.password);
 
     //Begin a transaction in the format of a promise
     let user = await new Promise((resolve, reject) => {
@@ -190,13 +148,13 @@ exports.signup = async (req, res) => {
                     `INSERT INTO users(email, password, first_name, last_name, phone_number, address_id, gender, role_id)
                                         VALUES(?,?,?,?,?,?,?,(SELECT id FROM roles WHERE name='user'))`,
                     [
-                      req.body.email,
+                      data.email,
                       passwordHash,
-                      req.body.firstName,
-                      req.body.lastName,
-                      req.body.phoneNumber,
+                      data.firstName,
+                      data.lastName,
+                      data.phoneNumber,
                       addressResults.insertId,
-                      req.body.gender,
+                      data.gender,
                     ],
                     function (err, results) {
                       if (err) {

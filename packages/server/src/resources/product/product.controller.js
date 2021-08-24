@@ -1,40 +1,39 @@
 const { pool } = require("../../utils/db");
+const { createOne, getMany } = require("./product.validation");
 
 
-//Define the valid options in the getMany query
-const validOrders = ['asc','desc'];
-const validOrderBys = ['product', 'price', 'discount', 'popularity']
+//Define the filters for the getMany query
 const validFilters = ['gender', 'b.name', 'c.color', 'lens' ]
 
 // /api/product/
 exports.getMany = async (req,res) => {
-
-  //Define the query variables
-  let order_by = req.query.orderBy || 'popularity';
-  let order = req.query.order || 'desc';
-  let query = req.query.query || '';
-  let filters = req.query.filters || [];
-  let limit = 20;
-  let offset = req.query.page ? (req.query.page * limit)-limit : 0;
-
-  //Checks if client sent filters query in an array format
-  if(!Array.isArray(filters)) {
-    return res.status(400).send({message: 'Filters must be an array', code:32})
+  let response;
+  try{
+    response = await getMany.validateAsync(req.query)
+  }catch(e){
+    if(e.isJoi) return res.status(400).send({message: e.details[0].message, code: 61})
+    return res.status(500).send({message: "Internal server error", code: 51})
   }
+  //Define the query variables
+  const {orderBy : order_by , order, query, page } = response;
+  let filters = response.filters || [];
+  let limit = 20;
+  let offset = (page * limit) - limit;
 
-  //Separate the filters model into an array
-  filters = filters.map(v=>v.split(';;;'))
+
+
+
   //Checks if the filter came in the correct formatting and if it actually exists as a valid column
-  let validFilter = filters.every((e)=>validFilters.includes(e[0]))
+  let sepFilters = [];
+  let validFilter = filters.every((e)=> {sepFilters.push(e.split(';;;'));return validFilters.includes(e.split(';;;')[0])})
 
   //Check the the query parameters are valid
-  if(!validOrders.includes(order) || !validOrderBys.includes(order_by) || !validFilter){
-    return res.status(400).send({message: 'Invalid order or filter', code:31})
-  }
+  if(!validFilter) return res.status(400).send({message: 'Invalid order or filter', code:31})
+  filters = sepFilters;
 
   //Checks if the client sent filters and then query the products and assign it to a variable
-  let products;
   try{
+    let products;
     if(filters.length > 0){
       let filtersStr = filters.reduce((acc, cur) => `${acc} AND ${cur[0]} = ?`,'')
       let filtersFill = filters.map((v)=>v[1])
@@ -66,36 +65,23 @@ exports.getMany = async (req,res) => {
     res.send(products[0])
   }catch (e) {
     console.log(e)
+    return res.status(500).send({message: "Internal server error", code: 51})
   }
-
-
 }
 
 exports.createOne = async (req,res) => {
-  if(!req.body.name ||
-    !req.body.price || 
-    !req.body.gender ||
-    !req.body.lens ||
-    !req.body.color ||
-    !req.body.brand
-    )return res.status(400).send({
-      message: "All the fields are required",
-      code: 33,
-    });
-  const dimensions = req.body.dimensions || null;
-  const description = req.body.description || null;
-  const inventory = req.body.inventory || 0;
-  const added_by = req.user.id;
-  let productId;
   try{
+    const 
+    {name, price, gender, lens, color,
+    brand, dimensions, description, inventory} = await createOne.validateAsync(req.body)
     productId = await pool.promise().query(`INSERT INTO products (name, price, gender, lens, color, brand, dimensions, description, inventory, added_by)
                                 VALUES(?,?,?,?,?,?,?,?,?,?)`,
-    [req.body.name, req.body.price, req.body.gender, req.body.lens, req.body.color, req.body.brand, dimensions, description, inventory, added_by])
-  }catch(err){
-    console.error(err);
+    [name, price, gender, lens, color, brand, dimensions, description, inventory, req.user.id])
+    res.send({id: productId[0].insertId})
+  }catch (e) {
+    if(e.isJoi) return res.status(400).send({message: e.details[0].message, code: 61})
     return res.status(500).send({message: "Internal server error", code: 51})
   }
-  res.send({id: productId[0].insertId})
 }
 
 
@@ -103,6 +89,7 @@ exports.createOne = async (req,res) => {
 exports.getOne = async (req,res) => {
   
 }
+
 exports.updateOne = async (req,res) => {
   
 }
