@@ -2,58 +2,54 @@ const {
   newToken, encryptPassword, checkPassword
 } = require("../../utils/auth");
 const pool = require("../../utils/db").pool;
-const { signup } = require("./auth.validation")
+const { signup, signin } = require("./auth.validation")
 
 
 
 //Checks a email and password taking in a JSON in the model:
 /*{
   "email":"lucas1losekann@gmail.com",
-  "password":"123456",
+  "password":"*(&#geDASd8973A",
   }
   Returning a JWT
   */
 exports.signin = async (req, res) => {
-  //Checks if frontend sent all the required data
-  if (!req.body.email || !req.body.password) {
-    return res.status(400).send({
-      message: "Email and password needed",
-      code: 11,
-    });
-  }
+  //Define the invalid email/password response
   const invalid = {
     message: "Email or password is invalid",
     code: 12,
   };
 
   try {
-    //Checks if the user exists
+    //Validates incoming data
+    const data = await signin.validateAsync(req.body)
+
+    //Checks if the user exists 
     const user = await pool
       .promise()
       .query(`SELECT email,password,id FROM users WHERE email = ?`, [
-        req.body.email,
+        data.email,
       ]);
     if (!user) {
       return res.status(401).send(invalid);
     }
+
+
     //Checks if the sent password and the database password match 
-    const match = await checkPassword(req.body.password, user[0][0].password);
+    const match = await checkPassword(data.password, user[0][0].password);
     if (!match) {
       return res.status(401).send(invalid);
     }
 
-    //If the user exists and the password matches send a JWT token to the client
 
+    //If the user exists and the password matches send a JWT token to the client
     const token = newToken(user[0][0].id);
     return res.status(201).send({
       token,
     });
   } catch (e) {
-    console.log(e);
-    return res.status(500).send({
-      message: "Internal server error",
-      code: 51,
-    });
+    if(e.isJoi) return res.status(400).send({message: e.details[0].message, code: 61})
+    return res.status(500).send({message: "Internal server error", code: 51})
   }
 };
 

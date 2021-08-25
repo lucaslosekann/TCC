@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-
+//createOne data model
 exports.createOne = Joi.object({
   name: Joi.string()
     .max(100)
@@ -41,6 +41,7 @@ exports.createOne = Joi.object({
   stripUnknown: true,
 })
 
+//getMany data model
 exports.getMany = Joi.object({
   orderBy: Joi.string()
     .valid('product', 'price', 'discount', 'popularity')
@@ -59,6 +60,19 @@ exports.getMany = Joi.object({
     .items(Joi.string().pattern(/^[^;;;]+;;;[^;;;]+$/))
 
 
+}).options({
+  abortEarly: true,
+  stripUnknown: true,
+})
+
+
+//getOne data model
+exports.getOne = Joi.object({
+  id: Joi.number()
+  .integer()
+  .positive()
+  .max(4294967295)
+  .required()
 }).options({
   abortEarly: true,
   stripUnknown: true,

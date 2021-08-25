@@ -19,6 +19,7 @@ const verifyToken = (token) =>
   });
 exports.verifyToken = verifyToken;
 
+
 //Checks if a user is logged in taking in a authorization header in the model:
 /*
   {
@@ -42,19 +43,24 @@ exports.protect = async (req, res, next) => {
   }
 
   //Selects a user with the id stored in the token payload
-  const user = await pool
+  try{
+    const user = await pool
     .promise()
     .query(
       `SELECT users.id, first_name, last_name, email, gender, roles.name as role FROM users INNER JOIN roles ON users.role_id = roles.id WHERE users.id = ?`,
       [payload.id]
     );
 
-  if (user[0].length <= 0) {
-    return res.status(401).send({message: 'Invalid user id', code: 23});
+    if (user[0].length <= 0) {
+      return res.status(401).send({message: 'Invalid user id', code: 23});
+    }
+    req.isAdmin = user[0][0].role === "admin";
+    req.user = user[0][0];
+    next();
+  }catch (e) {
+    return res.status(500).send({message: "Internal server error", code: 51})
   }
-  req.isAdmin = user[0][0].role === "admin";
-  req.user = user[0][0];
-  next();
+
 };
 
 //Checks if the user is admin

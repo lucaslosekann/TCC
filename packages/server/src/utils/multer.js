@@ -1,7 +1,7 @@
 const multer = require('multer')
 exports.multiImageUpload = multer({
     dest:'./uploads/',
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    limits: { fileSize: 6 * 1024 * 1024 }, // 6MB
     fileFilter: (req, file, cb) => {
         if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
             if(!req.body.project_id){
@@ -13,9 +13,10 @@ exports.multiImageUpload = multer({
                 cb(null, true);
             }
         } else {
+            //Not a valid image
             const err = new Error('Only .png, .jpg and .jpeg format allowed!')
             err.name = 43;
             return cb(err);
         }
     },
-}).array('images', 10)
+}).array('images', 10)//Field images with max 10 elements

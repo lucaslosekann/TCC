@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-
+//Signup data model
 exports.signup = Joi.object({
   email: Joi.string()
     .email()
@@ -47,4 +47,19 @@ exports.signup = Joi.object({
 }).options({
   abortEarly: true,
   stripUnknown: true,
+})
+
+//Signin data model
+exports.signin = Joi.object({
+  email: Joi.string()
+    .email()
+    .lowercase()
+    .max(45)
+    .required(),
+  password: Joi.string()
+    .max(100)
+    .required(),
+}).options({
+  abortEarly: true,
+  stripUnknown: true
 })
