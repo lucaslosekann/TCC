@@ -22,6 +22,12 @@ exports.pool = pool;
 async function setupDatabase (){
   try{
     await pool.promise().query(`
+    CREATE TABLE IF NOT EXISTS product_lens_format(
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(30) NOT NULL
+      )`
+    )
+    await pool.promise().query(`
     CREATE TABLE IF NOT EXISTS product_brands(
       id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(30) NOT NULL,
@@ -76,12 +82,14 @@ async function setupDatabase (){
         price FLOAT NOT NULL,
         description VARCHAR(255),
         gender ENUM('Masculino', 'Feminino', 'Unissex') NOT NULL,
+        age ENUM('Adulto', 'Infantil') NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         added_by INT UNSIGNED NOT NULL,
         lens ENUM('Sol', 'Grau', 'Outro') NOT NULL,
-        dimensions VARCHAR(20),
+        lens_format INT UNSIGNED NOT NULL,
         color INT UNSIGNED NOT NULL,
         brand INT UNSIGNED NOT NULL,
+        FOREIGN KEY (lens_format) REFERENCES product_lens_format(id),
         FOREIGN KEY (brand) REFERENCES product_brands(id),
         FOREIGN KEY (color) REFERENCES product_colors(id),
         FOREIGN KEY (added_by) REFERENCES users(id)

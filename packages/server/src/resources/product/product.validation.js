@@ -20,12 +20,17 @@ exports.createOne = Joi.object({
   gender: Joi.string()
     .valid('Masculino', 'Feminino', 'Unissex')
     .required(),
+  age: Joi.string()
+    .valid('Adulto', 'Infantil')
+    .required(),
   lens: Joi.string()
     .valid('Sol', 'Grau', 'Outro')
     .required(),
-  dimensions: Joi.string()
-    .max(20)
-    .default(null),
+  lens_format: Joi.number()
+    .integer()
+    .positive()
+    .max(4294967295)
+    .required(),
   color: Joi.number()
     .integer()
     .positive()
@@ -44,7 +49,7 @@ exports.createOne = Joi.object({
 //getMany data model
 exports.getMany = Joi.object({
   orderBy: Joi.string()
-    .valid('product', 'price', 'discount', 'popularity')
+    .valid('product', 'price', 'discount', 'popularity', 'p.id')
     .default('popularity'),
   order: Joi.string()
     .valid('asc','desc')

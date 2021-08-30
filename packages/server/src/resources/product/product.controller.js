@@ -41,10 +41,11 @@ exports.getMany = async (req,res) => {
       let filtersStr = filters.reduce((acc, cur) => `${acc} AND ${cur[0]} = ?`,'')
       let filtersFill = filters.map((v)=>v[1])
       products = await pool.promise().query(`
-      SELECT p.id AS pId, p.name AS product, discount, price, gender, COUNT(o.product_id) as popularity, lens, c.color AS color, b.name as brand
+      SELECT p.id AS pId, p.name AS product, discount, price, gender, COUNT(o.product_id) as popularity, lens, c.color AS color, b.name as brand, i.id AS thumb  
       FROM products AS p
       INNER JOIN product_brands AS b ON b.id = p.brand 
       INNER JOIN product_colors AS c ON c.id = p.color
+      LEFT JOIN product_images i on p.id = i.project_id and i.isThumb = 1
       LEFT JOIN orders AS o ON o.product_id = p.id
       WHERE p.name LIKE ?${filtersStr}
       GROUP BY p.id
@@ -54,10 +55,11 @@ exports.getMany = async (req,res) => {
       `,[`%${query}%`, ...filtersFill])
     }else{
       products = await pool.promise().query(`
-      SELECT p.id AS pId, p.name AS product, discount, price, gender, COUNT(o.product_id) as popularity, lens, c.color AS color, b.name AS brand
+      SELECT p.id AS pId, p.name AS product, discount, price, gender, COUNT(o.product_id) as popularity, lens, c.color AS color, b.name AS brand, i.id AS thumb
       FROM products AS p
       INNER JOIN product_brands AS b ON b.id = p.brand 
       INNER JOIN product_colors AS c ON c.id = p.color
+      LEFT JOIN product_images i on p.id = i.project_id and i.isThumb = 1
       LEFT JOIN orders AS o ON o.product_id = p.id
       WHERE p.name LIKE ?
       GROUP BY p.id
@@ -112,7 +114,7 @@ exports.getOne = async (req,res) => {
     const [product, images] = dbResponse[0]
 
     //Send it to the client
-    res.send({product,images})
+    res.send({product: product[0],images})
   }catch (e) {
     if(e.isJoi) return res.status(400).send({message: e.details[0].message, code: 61})
     return res.status(500).send({message: "Internal server error", code: 51})
