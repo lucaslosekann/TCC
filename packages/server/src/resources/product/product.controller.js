@@ -3,7 +3,7 @@ const { createOne, getMany, getOne } = require("./product.validation");
 
 
 //Define the filters for the getMany query
-const validFilters = ['gender', 'b.name', 'c.color', 'lens' ]
+const validFilters = ['gender', 'b.name', 'c.color', 'lens', 'age' ]
 
 
 
@@ -41,7 +41,7 @@ exports.getMany = async (req,res) => {
       let filtersStr = filters.reduce((acc, cur) => `${acc} AND ${cur[0]} = ?`,'')
       let filtersFill = filters.map((v)=>v[1])
       products = await pool.promise().query(`
-      SELECT p.id AS pId, p.name AS product, discount, price, gender, COUNT(o.product_id) as popularity, lens, c.color AS color, b.name as brand, i.id AS thumb  
+      SELECT p.id AS pId, p.name AS product, discount, price, gender, COUNT(o.product_id) as popularity, lens, c.color AS color, b.name as brand, i.id AS thumb, age 
       FROM products AS p
       INNER JOIN product_brands AS b ON b.id = p.brand 
       INNER JOIN product_colors AS c ON c.id = p.color
@@ -55,7 +55,7 @@ exports.getMany = async (req,res) => {
       `,[`%${query}%`, ...filtersFill])
     }else{
       products = await pool.promise().query(`
-      SELECT p.id AS pId, p.name AS product, discount, price, gender, COUNT(o.product_id) as popularity, lens, c.color AS color, b.name AS brand, i.id AS thumb
+      SELECT p.id AS pId, p.name AS product, discount, price, gender, COUNT(o.product_id) as popularity, lens, c.color AS color, b.name AS brand, i.id AS thumb, age
       FROM products AS p
       INNER JOIN product_brands AS b ON b.id = p.brand 
       INNER JOIN product_colors AS c ON c.id = p.color
@@ -80,11 +80,11 @@ exports.createOne = async (req,res) => {
     //Validates the incoming data
     const 
     {name, price, gender, lens, color,
-    brand, dimensions, description, inventory} = await createOne.validateAsync(req.body)
+    brand, dimensions, description, inventory, age, lens_format} = await createOne.validateAsync(req.body)
     //Insert the product into the database
-    productId = await pool.promise().query(`INSERT INTO products (name, price, gender, lens, color, brand, dimensions, description, inventory, added_by)
-                                VALUES(?,?,?,?,?,?,?,?,?,?)`,
-    [name, price, gender, lens, color, brand, dimensions, description, inventory, req.user.id])
+    productId = await pool.promise().query(`INSERT INTO products (name, price, gender, lens, color, brand, description, inventory, added_by, lens_format, age)
+                                VALUES(?,?,?,?,?,?,?,?,?,?,?)`,
+    [name, price, gender, lens, color, brand, description, inventory, req.user.id, lens_format, age])
     
     //Send the product id back to the client
     res.send({id: productId[0].insertId})
@@ -105,10 +105,11 @@ exports.getOne = async (req,res) => {
     const { id } = await getOne.validateAsync(req.params)
     //Get the product and its respective images from the database
     const dbResponse = await pool.promise().query(
-      `SELECT p.id AS pId, p.name AS product, discount, inventory, price, p.description, gender, lens, dimensions, c.color AS color, b.name as brand
+      `SELECT p.id AS pId, p.name AS product, discount, inventory, price, p.description, gender, lens, c.color AS color, b.name as brand, age, f.name as format
       FROM products AS p
       INNER JOIN product_brands AS b ON b.id = p.brand
       INNER JOIN product_colors AS c ON c.id = p.color
+      INNER JOIN product_lens_format AS f ON f.id = p.lens_format
       WHERE p.id = ?;
       SELECT id, isThumb from product_images WHERE project_id = ?`,[id,id])
     const [product, images] = dbResponse[0]
