@@ -1,0 +1,49 @@
+@import './variables.scss';
+.container{
+    height: calc(100vh - #{$footer_height});
+    .form > div{
+        display: flex;
+        justify-content:space-around;
+        width: 60vw;
+        
+        >*:not(.select){
+            width:20vw;
+        }
+        div{
+            margin-bottom: 3px;
+        }
+        .select{ 
+            width:100%;
+
+        }
+        a{
+            width:50%;
+        }
+    }
+    
+    .agroup{
+        display:flex;
+        justify-content:space-around;
+        color:rgb(0, 158, 211);
+    }
+    .content{
+        height: calc(100% - #{$header_height});
+        display:flex;
+        align-items: center;
+        justify-content:center;
+    }
+    .dadospessoais{
+        display: flex;
+        flex-direction: column;
+    }
+    .endereco{
+        display:flex;
+        flex-direction: column;
+    }
+    .image{
+        width:20%;
+    }
+    Button{
+        margin-top:10px;
+    }
+}

@@ -1,0 +1,42 @@
+@import './variables.scss';
+.container{
+    height: calc(100vh - #{$footer_height});
+
+    .agroup{
+        display:flex;
+        justify-content:space-around;
+        color:rgb(0, 158, 211);
+    }
+    
+    .imgUndraw{
+        width:30%;
+    }
+    .content{
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: calc(100% - #{$header_height});
+        form{
+            display:flex;
+            flex-direction: column;
+            justify-content:center;
+            >*{
+                margin-top:20px;
+                width:20vw;
+            }
+            a{
+                width:50%;
+            }
+        }
+    }
+    .esqueci{
+        color:rgb(0, 158, 211);
+    }
+    .title{
+        font-size: 7rem;
+        font-weight: 300;
+    }
+    .sendButton{
+        border-radius: 7rem;
+    }
+}

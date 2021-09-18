@@ -1,0 +1,21 @@
+@import './variables.scss';
+.container{
+  .imgContainer{
+    display:flex;
+    justify-content: center;
+    img{
+      margin-top: 60px;
+      height:50vh;
+    }
+    margin-bottom: 40px;
+  }
+  .products{
+    background-color: $primary_color;
+
+    div{
+      text-align: center;
+      font-size: 4rem;
+      font-weight: 300;
+    }
+  }
+}

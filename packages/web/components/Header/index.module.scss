@@ -1,0 +1,46 @@
+@import '../../styles/variables.scss';
+.container{
+  width: 100%;
+  height: $header_height;
+  background-color: $bg_header;
+  display:flex; 
+  align-items: center;
+  justify-content: space-between;
+  .right{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 40%;
+    .button{
+      &:hover{
+        color:#555;
+      }
+      height: $header_height;
+      border-radius: 0px;
+      box-shadow: none;
+      background-color: transparent;
+      transition: 0.2s;
+    }
+  }
+
+  .left{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 50%;
+    position: relative;
+    .logo{
+      margin-left: 20px;
+      img{
+        height:70px;
+      }
+    }
+
+    .search{
+
+    }
+  }
+  .button{
+    width:20%;
+  }
+}
